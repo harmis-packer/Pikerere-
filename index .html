@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prank</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        
+        body {
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            position: relative;
+            color: white;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.5s ease;
+        }
+        
+        /* Loading Screen */
+        #loading-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #333;
+            border-radius: 50%;
+            border-top-color: #0f0;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Error Screen */
+        #error-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #f00;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            z-index: 90;
+        }
+        
+        #error-screen h1 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            text-shadow: 0 0 5px black;
+        }
+        
+        #countdown {
+            font-size: 3rem;
+            font-weight: bold;
+            margin: 20px 0;
+            text-shadow: 0 0 5px black;
+        }
+        
+        #warning-text {
+            font-size: 1.2rem;
+            max-width: 80%;
+            text-shadow: 0 0 3px black;
+        }
+        
+        /* Matrix Screen */
+        #matrix-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 80;
+            overflow: hidden;
+        }
+        
+        #matrix-text {
+            position: relative;
+            z-index: 2;
+            font-size: 2rem;
+            color: #0f0;
+            text-shadow: 0 0 10px #0f0;
+            margin-bottom: 20px;
+        }
+        
+        .matrix-rain {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            overflow: hidden;
+        }
+        
+        .matrix-column {
+            display: inline-block;
+            width: 1em;
+            font-size: 16px;
+            color: #0f0;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            text-shadow: 0 0 5px #0f0;
+            animation: matrix-fall linear infinite;
+        }
+        
+        @keyframes matrix-fall {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(100vh); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <div class="loader"></div>
+        <h1>Loading...</h1>
+    </div>
+    
+    <!-- Error Screen -->
+    <div id="error-screen">
+        <h1>SYSTEM ERROR – Your phone is infected!</h1>
+        <div id="countdown">30</div>
+        <p id="warning-text">Do not leave this page! It may format your device or install multiple viruses.</p>
+    </div>
+    
+    <!-- Matrix Screen -->
+    <div id="matrix-screen">
+       
+        <div class="matrix-rain" id="matrix-container"></div>
+    </div>
+    
+    <script>
+        // Audio for beep sound (base64 encoded to avoid external files)
+        const beepSound = new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU' + 
+            Array(1000).join('123')); // Simple beep sound
+        
+        // Show loading screen first
+        const loadingScreen = document.getElementById('loading-screen');
+        const errorScreen = document.getElementById('error-screen');
+        const matrixScreen = document.getElementById('matrix-screen');
+        
+        // After 3 seconds, switch to error screen
+        setTimeout(() => {
+            loadingScreen.style.display = 'none';
+            errorScreen.style.display = 'flex';
+            
+            // Start countdown from 30
+            let count = 30;
+            const countdownElement = document.getElementById('countdown');
+            
+            const countdownInterval = setInterval(() => {
+                count--;
+                countdownElement.textContent = count;
+                
+                // Play beep sound
+                beepSound.currentTime = 0;
+                beepSound.play();
+                
+                // When countdown reaches 0, show matrix screen
+                if (count <= 0) {
+                    clearInterval(countdownInterval);
+                    errorScreen.style.display = 'none';
+                    matrixScreen.style.display = 'flex';
+                    createMatrixRain();
+                }
+            }, 1000);
+        }, 3000);
+        
+        // Create Matrix rain effect
+        function createMatrixRain() {
+            const container = document.getElementById('matrix-container');
+            const chars = "01";
+            const columns = Math.floor(window.innerWidth / 16);
+            
+            for (let i = 0; i < columns; i++) {
+                const column = document.createElement('div');
+                column.className = 'matrix-column';
+                
+                // Random delay and duration for each column
+                const delay = Math.random() * 5;
+                const duration = 2 + Math.random() * 3;
+                
+                column.style.animationDelay = `${delay}s`;
+                column.style.animationDuration = `${duration}s`;
+                
+                // Fill column with random characters
+                let content = '';
+                const rows = Math.floor(window.innerHeight / 16) + 2;
+                for (let j = 0; j < rows; j++) {
+                    content += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                
+                column.textContent = content;
+                container.appendChild(column);
+            }
+        }
+        
+        // Regenerate rain if window is resized
+        window.addEventListener('resize', () => {
+            if (matrixScreen.style.display === 'flex') {
+                document.getElementById('matrix-container').innerHTML = '';
+                createMatrixRain();
+            }
+        });
+    </script>
+</body>
+</html>
